@@ -1,4 +1,5 @@
 import { pool } from "../config/db.js";
+import bcrypt from "bcryptjs";
 
 // Obtener usuario
 const getUsers = async (req, res) => {
@@ -32,4 +33,95 @@ const getUser = async (req, res) => {
     };
 };
 
-export { getUsers, getUser };
+const createUser = async(req, res) => {
+    try {
+        const { username, password, email, lastname, firstname } = req.body;
+
+        if (!username || !password || !email || !lastname || !firstname) {
+            return res.status(400).json({
+                error: "Todos los campos son obligatorios"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const [result] = await pool.query(
+            `INSERT INTO users 
+            (username, password, email, lastname, firstname) 
+            VALUES (?, ?, ?, ?, ?)`,
+            [username, hashedPassword, email, lastname, firstname]
+        );
+
+        res.status(201).json({ 
+            message: "Usuario creado correctamente",
+            id: result.insertId
+        });
+
+    } catch(error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+// Editar usuario
+const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { username, password, email, lastname, firstname } = req.body;
+
+        if (isNaN(id)) {
+            return res.status(400).json({ error: "ID inválido" });
+        }
+
+        let query = `
+            UPDATE users 
+            SET username = ?, email = ?, lastname = ?, firstname = ?
+        `;
+
+        let values = [username, email, lastname, firstname];
+
+        // Si envían nueva contraseña, actualizarla
+        if (password && password.trim() !== "") {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            query += `, password = ?`;
+            values.push(hashedPassword);
+        }
+
+        query += ` WHERE id = ?`;
+        values.push(id);
+
+        await pool.query(query, values);
+
+        res.json({
+            message: "Usuario actualizado correctamente"
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Eliminar usuario
+const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (isNaN(id)) {
+            return res.status(400).json({ error: "ID inválido" });
+        }
+
+        await pool.query(
+            "DELETE FROM users WHERE id = ?",
+            [id]
+        );
+
+        res.json({
+            message: "Usuario eliminado correctamente"
+        });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+export { getUsers, getUser, createUser, updateUser, deleteUser };
