@@ -11,7 +11,7 @@ const register = async (req, res) => {
         console.log(req.body);
 
         const [result] = await pool.query(
-            "INSERT INTO users (username, password, email, lastname, firstname) VALUES (?, ?, ?, ?, ?)", [username, hashedPassword, email, lastname, firstname]
+            "INSERT INTO accounts (username, password, email, lastname, firstname, rolid) VALUES (?, ?, ?, ?, ?, 3)", [username, hashedPassword, email, lastname, firstname]
         );
 
         res.json({ message: "Usuario creado correctamente " });
@@ -25,7 +25,7 @@ const login = async (req, res) => {
         const { username, password } = req.body;
 
         const [rows] = await pool.query(
-            "SELECT * FROM users WHERE username = ?", [username]
+            "SELECT * FROM accounts WHERE username = ?", [username]
         );
 
         const user = rows[0];

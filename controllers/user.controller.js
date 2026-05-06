@@ -4,10 +4,11 @@ import bcrypt from "bcryptjs";
 // Obtener usuario
 const getUsers = async (req, res) => {
     try {
-        const [rows] = await pool.query("SELECT * FROM users");
+        const [rows] = await pool.query("SELECT a.id, a.username, a.email, a.lastname, a.firstname, r.name AS rol FROM accounts a JOIN roles r ON a.rolid = r.id");
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
+        console.error("Error al obtener usuarios: ", error);
     }
 }
 
@@ -21,7 +22,7 @@ const getUser = async (req, res) => {
 
         const userId = parseInt(id, 10);
 
-        const [rows] = await pool.query("SELECT id, username, email, lastname, firstname FROM users WHERE id = ?", [userId]);
+        const [rows] = await pool.query("SELECT id, username, email, lastname, firstname FROM accounts WHERE id = ?", [userId]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: "Usuario no encontrado" });
@@ -46,7 +47,7 @@ const createUser = async(req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const [result] = await pool.query(
-            `INSERT INTO users 
+            `INSERT INTO accounts
             (username, password, email, lastname, firstname) 
             VALUES (?, ?, ?, ?, ?)`,
             [username, hashedPassword, email, lastname, firstname]
@@ -66,18 +67,18 @@ const createUser = async(req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { username, password, email, lastname, firstname } = req.body;
+        const { username, password, email, lastname, firstname, rolid } = req.body;
 
         if (isNaN(id)) {
             return res.status(400).json({ error: "ID inválido" });
         }
 
         let query = `
-            UPDATE users 
-            SET username = ?, email = ?, lastname = ?, firstname = ?
+            UPDATE accounts
+            SET username = ?, email = ?, lastname = ?, firstname = ?, rolid = ?
         `;
 
-        let values = [username, email, lastname, firstname];
+        let values = [username, email, lastname, firstname, rolid];
 
         // Si envían nueva contraseña, actualizarla
         if (password && password.trim() !== "") {
@@ -110,7 +111,7 @@ const deleteUser = async (req, res) => {
         }
 
         await pool.query(
-            "DELETE FROM users WHERE id = ?",
+            "DELETE FROM accounts WHERE id = ?",
             [id]
         );
 
