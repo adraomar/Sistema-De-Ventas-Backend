@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 // Obtener usuario
 const getUsers = async (req, res) => {
     try {
-        const [rows] = await pool.query("SELECT a.id, a.username, a.email, a.lastname, a.firstname, r.name AS rol FROM accounts a JOIN roles r ON a.rolid = r.id");
+        const [rows] = await pool.query("SELECT a.id, a.username, a.email, a.lastname, a.firstname, a.rolid, r.name AS rol FROM accounts a JOIN roles r ON a.rolid = r.id");
         res.json(rows);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -34,7 +34,7 @@ const getUser = async (req, res) => {
     };
 };
 
-const createUser = async(req, res) => {
+const createUser = async (req, res) => {
     try {
         const { username, password, email, lastname, firstname } = req.body;
 
@@ -53,12 +53,12 @@ const createUser = async(req, res) => {
             [username, hashedPassword, email, lastname, firstname]
         );
 
-        res.status(201).json({ 
+        res.status(201).json({
             message: "Usuario creado correctamente",
             id: result.insertId
         });
 
-    } catch(error) {
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 }
