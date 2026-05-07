@@ -36,9 +36,9 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
     try {
-        const { username, password, email, lastname, firstname } = req.body;
+        const { username, password, email, lastname, firstname, rolid } = req.body;
 
-        if (!username || !password || !email || !lastname || !firstname) {
+        if (!username || !password || !email || !lastname || !firstname || !rolid) {
             return res.status(400).json({
                 error: "Todos los campos son obligatorios"
             });
@@ -48,9 +48,9 @@ const createUser = async (req, res) => {
 
         const [result] = await pool.query(
             `INSERT INTO accounts
-            (username, password, email, lastname, firstname) 
-            VALUES (?, ?, ?, ?, ?)`,
-            [username, hashedPassword, email, lastname, firstname]
+            (username, password, email, lastname, firstname, rolid) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [username, hashedPassword, email, lastname, firstname, rolid]
         );
 
         res.status(201).json({
