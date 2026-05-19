@@ -4,6 +4,7 @@ import cors from "cors";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import rolesRoutes from "./routes/roles.routes.js";
+import productsRoutes from "./routes/products.routes.js";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/roles", rolesRoutes);
+app.use("/products", productsRoutes);
 
 // ON
 app.listen(process.env.PORT || 3000, async () => {
